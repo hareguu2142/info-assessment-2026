@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빗면 운동 시뮬레이터</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1c2333;--mute:#667;--line:#dde2ee;--blue:#2f7df6;--red:#ef5350;--green:#26a269;--orange:#f59f00;--purple:#7e57c2}
+@media (prefers-color-scheme:dark){:root{--bg:#12151d;--card:#1b2030;--ink:#e8ecf5;--mute:#9aa3b8;--line:#2c3348}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Malgun Gothic",sans-serif;line-height:1.5}
+header{padding:24px 16px 8px;max-width:1100px;margin:auto}
+h1{margin:0;font-size:1.6rem}
+header p{margin:4px 0 0;color:var(--mute)}
+main{max-width:1100px;margin:auto;padding:12px 16px 40px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h2{margin:0 0 10px;font-size:1.05rem}
+.full{grid-column:1/-1}
+canvas{width:100%;display:block;border-radius:8px}
+.row{display:grid;grid-template-columns:110px 1fr 64px;gap:8px;align-items:center;margin:6px 0;font-size:.92rem}
+.row input[type=range]{width:100%}
+.row output{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.seg{display:flex;gap:6px;margin-bottom:8px}
+.seg button,.btns button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit}
+.seg button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns .go{background:var(--green);color:#fff;border-color:var(--green);font-weight:700;flex:1}
+.problem{border-left:4px solid var(--orange);padding:8px 12px;background:rgba(245,159,0,.1);border-radius:6px;font-size:.92rem}
+.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;padding:8px 10px 8px 40px;position:relative;border-bottom:1px dashed var(--line);font-size:.93rem}
+.steps li::before{content:counter(s);position:absolute;left:8px;top:8px;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;text-align:center;font-size:.8rem;line-height:22px}
+.steps b{color:var(--blue)}
+.katex{font-size:1.05em}.sim-wrap{position:relative}.sim-labels{position:absolute;inset:0;pointer-events:none}.sim-label{position:absolute;transform:translateY(-50%);white-space:nowrap}
+.ans{margin-top:10px;font-size:1.1rem;font-weight:700;text-align:center;padding:10px;border-radius:8px;background:rgba(47,125,246,.12)}
+.bar{margin:8px 0}
+.bar .lab{display:flex;justify-content:space-between;font-size:.88rem}
+.bar .track{height:18px;background:var(--line);border-radius:9px;overflow:hidden}
+.bar .fill{height:100%;width:0;border-radius:9px}
+.readout{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;text-align:center}
+.readout div{background:var(--bg);border-radius:8px;padding:6px;font-size:.8rem;color:var(--mute)}
+.readout b{display:block;font-size:1.05rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.timebox{display:flex;gap:10px;align-items:center}
+.timebox input{flex:1}
+@media(max-width:800px){main{grid-template-columns:1fr}.row{grid-template-columns:90px 1fr 60px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>빗면 운동 시뮬레이터</h1>
+  <p>교과서 그림만으로는 상상하기 어려운 운동을, 애니메이션·에너지 상태창·그래프로 직접 확인해 보세요.</p>
+</header>
+<main>
+  <section class="card full">
+    <h2>기준 문제</h2>
+    <div class="problem">수평면과 이루는 각이 <span data-tex="30^circ"></span>인 빗면의 위쪽 방향으로 질량 <span data-tex="1\,\mathrm{kg}"></span>인 물체를 <span data-tex="v_0"></span>의 속력으로 밀어 올렸더니 2초 동안 올라간 후 다시 되돌아 내려왔다. <span data-tex="v_0"></span>는? (단, 중력 가속도는 <span data-tex="10\,\mathrm{m/s^2}"></span>이고, 모든 마찰과 공기 저항은 무시한다.) — 정답 <b><span data-tex="10\,\mathrm{m/s}"></span></b></div>
+  </section>
+
+  <section class="card">
+    <h2>① 조건 설정</h2>
+    <div class="seg" id="mode">
+      <button data-m="t" class="on">올라간 시간 입력 → <span data-tex="v_0"></span> 계산</button>
+      <button data-m="v"><span data-tex="v_0"></span> 입력 → 올라간 시간 계산</button>
+    </div>
+    <div class="row"><label>빗면 각도 <span data-tex="\theta"></span></label><input id="ang" type="range" min="5" max="75" step="1" value="30"><output id="angO"></output></div>
+    <div class="row"><label>질량 <span data-tex="m"></span></label><input id="mass" type="range" min="0.5" max="5" step="0.5" value="1"><output id="massO"></output></div>
+    <div class="row"><label>중력가속도 <span data-tex="g"></span></label><input id="g" type="range" min="1" max="25" step="0.1" value="10"><output id="gO"></output></div>
+    <div class="row" id="rowT"><label>올라간 시간 <span data-tex="t"></span></label><input id="tup" type="range" min="0.5" max="5" step="0.1" value="2"><output id="tupO"></output></div>
+    <div class="row" id="rowV"><label>처음 속력 <span data-tex="v_0"></span></label><input id="v0" type="range" min="1" max="40" step="0.5" value="10"><output id="v0O"></output></div>
+    <div class="btns">
+      <button class="go" id="start">▶ 출발</button>
+      <button id="pause">⏸ 일시정지</button>
+      <button id="reset">↺ 처음으로</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>② <span data-tex="v_0"></span> 구하는 과정 (단계별)</h2>
+    <ol class="steps" id="steps"></ol>
+    <div class="ans" id="ans"></div>
+  </section>
+
+  <section class="card full">
+    <h2>③ 시뮬레이션</h2>
+    <div class="sim-wrap"><canvas id="sim" width="1000" height="360"></canvas><div class="sim-labels"><span id="simHeightLabel" class="sim-label"></span><span id="simVelocityLabel" class="sim-label" style="color:#0b6bcb"></span><span id="simGravityLabel" class="sim-label" style="color:#ef5350"></span></div></div>
+    <div class="timebox" style="margin-top:10px">
+      <span>시간</span><input id="slider" type="range" min="0" max="1" step="0.001" value="0"><b id="tNow" style="min-width:90px;text-align:right"></b>
+    </div>
+    <div class="readout">
+      <div>속력<b id="rV"></b></div><div>이동거리(빗면 위)<b id="rS"></b></div><div>높이 <span data-tex="h"></span><b id="rH"></b></div><div>운동 방향<b id="rD"></b></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>④ 에너지 상태창</h2>
+    <div class="bar"><div class="lab"><span>운동에너지 <span data-tex="E_k"></span></span><b id="eK"></b></div><div class="track"><div class="fill" id="bK" style="background:var(--red)"></div></div></div>
+    <div class="bar"><div class="lab"><span>위치에너지 <span data-tex="E_p"></span></span><b id="eP"></b></div><div class="track"><div class="fill" id="bP" style="background:var(--blue)"></div></div></div>
+    <div class="bar"><div class="lab"><span>역학적 에너지 <span data-tex="E=E_k+E_p"></span></span><b id="eM"></b></div><div class="track"><div class="fill" id="bM" style="background:var(--green)"></div></div></div>
+    <p style="color:var(--mute);font-size:.85rem;margin:8px 0 0">마찰과 공기 저항이 없으므로 <span data-tex="E_k"></span>와 <span data-tex="E_p"></span>는 서로 바뀌지만 합은 항상 일정합니다.</p>
+  </section>
+
+  <section class="card">
+    <h2>⑤ 그래프</h2>
+    <canvas id="g1" width="500" height="170"></canvas>
+    <canvas id="g2" width="500" height="170" style="margin-top:8px"></canvas>
+  </section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+let mode='t', T=4, playing=false, t=0, last=0;
+const P={};
+
+function compute(){
+  const th=+$('ang').value*Math.PI/180, m=+$('mass').value, g=+$('g').value;
+  const a=g*Math.sin(th);
+  let tup,v0;
+  if(mode==='t'){tup=+$('tup').value;v0=a*tup}else{v0=+$('v0').value;tup=v0/a}
+  Object.assign(P,{th,m,g,a,tup,v0,T:2*tup,smax:v0*v0/(2*a)});
+  $('angO').value=$('ang').value+'°';$('massO').value=m+' kg';$('gO').value=g.toFixed(1);
+  $('tupO').value=(+$('tup').value).toFixed(1)+' s';$('v0O').value=(+$('v0').value).toFixed(1)+' m/s';
+  $('rowT').style.display=mode==='t'?'grid':'none';$('rowV').style.display=mode==='v'?'grid':'none';
+  const f=x=>+x.toFixed(2), K=q=>katex.renderToString(q,{throwOnError:false}), U=(v,u)=>K(v+'\\,\\mathrm{'+u+'}');
+  const A=$('ang').value;
+  const gs=g.toFixed(1);
+  $('steps').innerHTML=
+   `<li>마찰이 없으므로 빗면 방향 힘은 중력의 성분뿐입니다.<br>${K('F=mg\\sin\\theta='+m+'\\times'+gs+'\\times\\sin('+A+'^\\circ)=')} <b>${U(f(m*a),'N')}</b></li>`+
+   `<li>뉴턴 제2법칙 ${K('F=ma')}로 가속도의 크기를 구합니다. (질량과 무관!)<br>${K('a=g\\sin\\theta='+gs+'\\times\\sin('+A+'^\\circ)=')} <b>${U(f(a),'m/s^2')}</b></li>`+
+   (mode==='t'
+    ?`<li>꼭대기에서 속력이 0이므로 ${K('v=v_0-at=0')}.<br>올라간 시간 ${K('t=')} <b>${U(tup.toFixed(1),'s')}</b></li><li>${K('v_0=at='+f(a)+'\\times'+tup.toFixed(1)+'=')} <b>${U(f(v0),'m/s')}</b></li>`
+    :`<li>꼭대기에서 속력이 0이므로 ${K('v=v_0-at=0')}.<br>${K('t=\\dfrac{v_0}{a}=\\dfrac{'+v0.toFixed(1)+'}{'+f(a)+'}=')} <b>${U(f(tup),'s')}</b></li><li>출발점에 돌아오는 총 시간 ${K('2t=')} <b>${U(f(2*tup),'s')}</b></li>`)+
+   `<li>최고점까지 이동거리 ${K('s=\\dfrac{v_0^2}{2a}=')} <b>${U(f(P.smax),'m')}</b>, 높이 ${K('h=s\\sin\\theta=')} <b>${U(f(P.smax*Math.sin(th)),'m')}</b></li>`;
+  $('ans').innerHTML=K('v_0='+f(v0)+'\\,\\mathrm{m/s}')+' <small>(올라간 시간 '+U(f(tup),'s')+', 총 '+U(f(2*tup),'s')+')</small>';
+  renderStatic();
+  $('slider').max=P.T;
+  if(t>P.T)t=P.T;
+  draw();
+}
+
+function renderStatic(){document.querySelectorAll('[data-tex]').forEach(e=>{if(!e.dataset.done){katex.render(e.dataset.tex,e,{throwOnError:false});e.dataset.done=1}})}
+function state(tt){
+  const s=P.v0*tt-0.5*P.a*tt*tt, v=P.v0-P.a*tt;
+  return {s,v,speed:Math.abs(v),h:s*Math.sin(P.th)};
+}
+
+function draw(){
+  const {s,v,speed,h}=state(t);
+  // readouts
+  $('tNow').textContent=t.toFixed(2)+' / '+P.T.toFixed(2)+' s';
+  $('slider').value=t;
+  $('rV').textContent=speed.toFixed(2)+' m/s';$('rS').textContent=s.toFixed(2)+' m';$('rH').textContent=h.toFixed(2)+' m';
+  $('rD').textContent=t>=P.T-1e-9?'정지':Math.abs(v)<0.05?'최고점':v>0?'↗ 올라가는 중':'↙ 내려오는 중';
+  // energy
+  const Ek=0.5*P.m*speed*speed, Ep=P.m*P.g*h, E=0.5*P.m*P.v0*P.v0, mx=E||1;
+  $('eK').textContent=Ek.toFixed(1)+' J';$('eP').textContent=Ep.toFixed(1)+' J';$('eM').textContent=(Ek+Ep).toFixed(1)+' J';
+  $('bK').style.width=Ek/mx*100+'%';$('bP').style.width=Ep/mx*100+'%';$('bM').style.width=(Ek+Ep)/mx*100+'%';
+  drawSim(s,v);drawGraph($('g1'),'속력 (m/s)',x=>Math.abs(P.v0-P.a*x),P.v0,'#ef5350');
+  drawGraph($('g2'),'이동거리 (m)',x=>P.v0*x-0.5*P.a*x*x,P.smax,'#2f7df6');
+}
+
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n)}
+function drawSim(s,v){
+  const c=$('sim'),x=c.getContext('2d'),W=c.width,H=c.height;
+  x.clearRect(0,0,W,H);
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  x.fillStyle=dark?'#232a3f':'#eef2fa';x.fillRect(0,0,W,H);
+  const gy=H-40, x0=70, th=P.th;
+  const maxLen=Math.min((W-x0-60)/Math.cos(th),(gy-30)/Math.sin(th));
+  const len=Math.min(maxLen,Math.max(P.smax*1.15,1)*1);
+  // scale: pixels per metre so the incline spans full length
+  const inclLen=Math.max(P.smax*1.15,0.5);
+  const sc=maxLen/inclLen;
+  const ex=x0+maxLen*Math.cos(th), ey=gy-maxLen*Math.sin(th);
+  x.fillStyle=dark?'#4a5270':'#b9c1d6';
+  x.beginPath();x.moveTo(x0,gy);x.lineTo(ex,ey);x.lineTo(ex,gy);x.closePath();x.fill();
+  x.fillStyle=dark?'#3a4260':'#9aa3ba';x.fillRect(0,gy,W,40);
+  x.fillStyle=dark?'#e8ecf5':'#1c2333';x.font='14px sans-serif';x.fillText('수평면',W-70,gy+24);
+  // angle arc
+  x.strokeStyle='#f59f00';x.lineWidth=2;x.beginPath();x.arc(x0,gy,44,-th,0);x.stroke();
+  x.fillStyle='#f59f00';x.font='bold 14px sans-serif';x.fillText(Math.round(th*180/Math.PI)+'°',x0+50,gy-8);
+  // height guide
+  const r=16, px=x0+s*sc*Math.cos(th), py=gy-s*sc*Math.sin(th);
+  x.setLineDash([5,5]);x.strokeStyle=dark?'#9aa3b8':'#667';x.lineWidth=1;
+  x.beginPath();x.moveTo(px,py);x.lineTo(px,gy);x.stroke();x.setLineDash([]);
+  x.fillStyle=dark?'#9aa3b8':'#667';x.font='13px sans-serif';
+  placeMathLabel($('simHeightLabel'),'h='+ (s*Math.sin(th)).toFixed(2)+'\\,\\mathrm{m}',c,px+6,(py+gy)/2);
+  // ball (sits on surface)
+  const nx=-Math.sin(th), ny=-Math.cos(th);
+  const bx=px+nx*r, by=py+ny*r;
+  const gr=x.createRadialGradient(bx-5,by-5,2,bx,by,r);gr.addColorStop(0,'#8ec5ff');gr.addColorStop(1,'#1e5fd0');
+  x.fillStyle=gr;x.beginPath();x.arc(bx,by,r,0,7);x.fill();
+  // velocity arrow
+  $('simVelocityLabel').style.display='none';
+  if(Math.abs(v)>0.05){
+    const dx=Math.cos(th)*Math.sign(v), dy=-Math.sin(th)*Math.sign(v);
+    const L=Math.min(90,Math.abs(v)*6+8);
+    arrow(x,bx,by,bx+dx*L,by+dy*L,'#0b6bcb','v');
+  }
+  // gravity component arrow
+  const ga=Math.min(70,P.a*4+10);
+  arrow(x,bx,by,bx-Math.cos(th)*ga,by+Math.sin(th)*ga,'#ef5350','g·sinθ');
+}
+function placeMathLabel(el,tex,c,x,y){
+  const rect=c.getBoundingClientRect();
+  el.innerHTML=katex.renderToString(tex,{throwOnError:false});
+  el.style.left=(x/c.width*100)+'%';el.style.top=(y/c.height*100)+'%';
+  el.style.fontSize=(13*rect.width/c.width)+'px';el.style.display='block';
+}
+function arrow(x,x1,y1,x2,y2,col,label){
+  x.strokeStyle=col;x.fillStyle=col;x.lineWidth=3;
+  x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();
+  const a=Math.atan2(y2-y1,x2-x1);
+  x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-10*Math.cos(a-.4),y2-10*Math.sin(a-.4));x.lineTo(x2-10*Math.cos(a+.4),y2-10*Math.sin(a+.4));x.fill();
+  if(label){const el=label==='v'?$('simVelocityLabel'):$('simGravityLabel');const tex=label==='v'?'v':'g\\sin\\theta';placeMathLabel(el,tex,x.canvas,x2+6,y2-6);}
+}
+
+function drawGraph(c,title,f,ymax,col){
+  const x=c.getContext('2d'),W=c.width,H=c.height,l=44,b=24,tp=22,r=10;
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches, ink=dark?'#9aa3b8':'#667';
+  x.clearRect(0,0,W,H);
+  x.strokeStyle=ink;x.fillStyle=ink;x.lineWidth=1;x.font='12px sans-serif';
+  x.beginPath();x.moveTo(l,tp);x.lineTo(l,H-b);x.lineTo(W-r,H-b);x.stroke();
+  x.fillText(title,l+6,14);
+  x.fillText('t (s)',W-34,H-8);
+  x.fillText(ymax.toFixed(1),4,tp+8);x.fillText('0',30,H-b);
+  x.fillText(P.T.toFixed(1),W-r-18,H-b+13);
+  const X=q=>l+q/P.T*(W-l-r), Y=q=>H-b-q/ymax*(H-b-tp);
+  x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();
+  for(let i=0;i<=120;i++){const q=P.T*i/120;i?x.lineTo(X(q),Y(f(q))):x.moveTo(X(q),Y(f(q)))}
+  x.stroke();
+  x.setLineDash([4,4]);x.strokeStyle=ink;x.beginPath();x.moveTo(X(P.tup),tp);x.lineTo(X(P.tup),H-b);x.stroke();x.setLineDash([]);
+  x.fillStyle=ink;x.fillText('최고점',X(P.tup)+4,tp+10);
+  x.fillStyle=col;x.beginPath();x.arc(X(t),Y(f(t)),5,0,7);x.fill();
+}
+
+function loop(ts){
+  if(playing){
+    t+=(ts-last)/1000;
+    if(t>=P.T){t=P.T;playing=false}
+    draw();
+  }
+  last=ts;requestAnimationFrame(loop);
+}
+$('start').onclick=()=>{if(t>=P.T)t=0;playing=true};
+$('pause').onclick=()=>{playing=false};
+$('reset').onclick=()=>{playing=false;t=0;draw()};
+$('slider').oninput=e=>{playing=false;t=+e.target.value;draw()};
+['ang','mass','g','tup','v0'].forEach(i=>$(i).oninput=()=>{playing=false;t=0;compute()});
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x===b));
+  if(mode==='v')$('v0').value=Math.round(P.v0*2)/2;
+  else $('tup').value=Math.min(5,Math.max(.5,+P.tup.toFixed(1)));
+  t=0;compute();
+});
+compute();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
