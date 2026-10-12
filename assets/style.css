@@ -52,7 +52,7 @@ section{scroll-margin-top:70px}
 .ex-card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .ex-card .tag{font-size:.82rem;font-weight:700;color:var(--mute)}
 .ex-card p{margin:0;color:var(--mute);font-size:.98rem}
-.ex-card .go{margin-top:auto;padding-top:8px;font-weight:700;color:var(--accent)}
+.ex-card .go{text-decoration:none;padding-top:8px;font-weight:700;color:var(--accent)}
 
 /* 흐름(단계) 목록 */
 .flow{list-style:none;margin:0;padding:0;counter-reset:f}
