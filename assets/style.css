@@ -91,11 +91,13 @@ mark.hl::before{content:attr(data-part);display:inline-block;font-size:.72rem;fo
 .hl-2{background:#b9f6ca}  .hl-2::before{color:var(--green)}
 .hl-3{background:#ffd59e}  .hl-3::before{color:var(--warm)}
 .hl-4{background:#ffc1cf}  .hl-4::before{color:var(--rose)}
+.hl-5{background:#b3d4ff}  .hl-5::before{color:var(--accent)}
 @media (prefers-color-scheme:dark){
   .hl-1{background:#5c5313} .hl-1::before{color:#ffe066}
   .hl-2{background:#1d4a30}
   .hl-3{background:#5a3a14}
   .hl-4{background:#5a2232}
+  .hl-5{background:#1f3a66}
 }
 @media (max-width:700px){ .article{padding:18px 16px} }
 
