@@ -78,6 +78,27 @@ section{scroll-margin-top:70px}
   .para{grid-template-columns:1fr;gap:6px}
   .para .note{position:static;justify-self:start}
 }
+/* ---------- 한 편의 글 + 형광펜 구분 ---------- */
+.article{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;line-height:1.9}
+.article p{margin:0}
+.article p+p{margin-top:14px}
+.article figure.problem{margin:16px 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none;font-size:.88rem;font-weight:700}
+.legend li{padding:3px 10px;border-radius:6px}
+mark.hl{color:inherit;padding:1px 2px;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.hl::before{content:attr(data-part);display:inline-block;font-size:.72rem;font-weight:800;line-height:1.3;padding:1px 6px;margin-right:6px;border-radius:999px;background:var(--surface);vertical-align:2px}
+.hl-1{background:#fff176}  .hl-1::before{color:#8a6d00}
+.hl-2{background:#b9f6ca}  .hl-2::before{color:var(--green)}
+.hl-3{background:#ffd59e}  .hl-3::before{color:var(--warm)}
+.hl-4{background:#ffc1cf}  .hl-4::before{color:var(--rose)}
+@media (prefers-color-scheme:dark){
+  .hl-1{background:#5c5313} .hl-1::before{color:#ffe066}
+  .hl-2{background:#1d4a30}
+  .hl-3{background:#5a3a14}
+  .hl-4{background:#5a2232}
+}
+@media (max-width:700px){ .article{padding:18px 16px} }
+
 .unfinished{color:var(--mute)}
 .unfinished::after{content:" …";}
 
