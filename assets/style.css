@@ -139,6 +139,17 @@ figcaption{font-size:.88rem;color:var(--mute);margin-top:8px}
 .btn{display:inline-block;padding:12px 20px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 
+/* ---------- 제출 기한 달력 ---------- */
+.due{font-size:1.15rem;font-weight:800;color:var(--rose);margin:0 0 14px}
+.cal{border-collapse:collapse;width:100%;max-width:460px;table-layout:fixed;text-align:center;background:var(--surface)}
+.cal caption{font-weight:700;margin-bottom:6px}
+.cal th,.cal td{border:1px solid var(--line);padding:6px 2px;height:2.8em;vertical-align:top;font-size:.95rem}
+.cal th{background:var(--bg);height:auto}
+.cal .sun{color:var(--rose)} .cal .sat{color:var(--accent)}
+.cal small{display:block;font-size:.65rem;line-height:1.2;font-weight:700}
+.cal .ev{background:var(--accent-soft)}
+.cal .dl{background:var(--rose);color:#fff;font-weight:800}
+
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:64px;flex-wrap:wrap}
 .pager a{flex:1;min-width:220px;text-decoration:none;color:inherit}
 .pager small{color:var(--mute);display:block}
