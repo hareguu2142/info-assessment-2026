@@ -9,6 +9,7 @@ future-society.html      예시 ② 미래사회상
 examples/incline-sim-v1.html   바이브코딩 결과물 원본(1차, 수정하지 않음)
 assets/style.css         공통 스타일
 assets/problem-incline.png     기준 문제 이미지
+files/                   제출 양식 예시 (예시 ①·② 본문을 옮긴 HWPX + PDF)
 .nojekyll                Jekyll 처리 끄기
 ```
 
